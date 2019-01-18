@@ -118,14 +118,14 @@ anat = {'C4','C5','C4C5DiscAnnulus','C4C5DiscNucleus','PllLeft','PllRight','SC',
 
 % Overall
 for a = 1:length(anat)
-    Metrics(sj).(strcat((anat{a}),'Overall','Contact_num')) = numel(find(diff(Contact_con1.(anat{a}))>0));
+    Metrics.(strcat((anat{a}),'Overall','Contact_num')) = numel(find(diff(Contact_con1.(anat{a}))>0));
 end
 
 % With each tool
 for a = 1:length(anat)
     for t = 1:length(tools)
         Contact_1.(anat{a}).(tools{t}) = Contact_con1.(anat{a})(ToolUsed.(tools{t}));  
-        Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_num')) = numel(find(diff(Contact_1.(anat{a}).(tools{t}))));
+        Metrics.(strcat((anat{a}),(tools{t}),'Contact_num')) = numel(find(diff(Contact_1.(anat{a}).(tools{t}))));
     end
 end
 
@@ -133,14 +133,14 @@ end
 
 % Overall
 for a = 1:length(anat)
-    Metrics(sj).(strcat((anat{a}),'Overall','Cutting_num')) = numel(find(diff(Cutting_con1.(anat{a}))>0));
+    Metrics.(strcat((anat{a}),'Overall','Cutting_num')) = numel(find(diff(Cutting_con1.(anat{a}))>0));
 end
 
 % With each tool
 for a = 1:length(anat)
     for t = 1:length(tools)
         Cutting_1.(anat{a}).(tools{t}) = Cutting_con1.(anat{a})(ToolUsed.(tools{t}));  
-        Metrics(sj).(strcat((anat{a}),(tools{t}),'Cutting_num')) = numel(find(diff(Cutting_1.(anat{a}).(tools{t}))));
+        Metrics.(strcat((anat{a}),(tools{t}),'Cutting_num')) = numel(find(diff(Cutting_1.(anat{a}).(tools{t}))));
     end
 end
 
@@ -148,13 +148,13 @@ end
 
 % Overall
 for a = 1:length(anat_cutvox)
-    Metrics(sj).(strcat((anat{a}),'Overall','Cut_voxels')) = sum(x.(anat_cutvox{a}));
+    Metrics.(strcat((anat{a}),'Overall','Cut_voxels')) = sum(x.(anat_cutvox{a}));
 end
 
 % With each tool
 for a = 1:length(anat_cutvox)
     for t = 1:length(tools)
-        Metrics(sj).(strcat((anat{a}),(tools{t}),'Cut_voxels')) = sum(x.(anat_cutvox{a})(ToolUsed.(tools{t})));  
+        Metrics.(strcat((anat{a}),(tools{t}),'Cut_voxels')) = sum(x.(anat_cutvox{a})(ToolUsed.(tools{t})));  
     end
 end
 
@@ -182,9 +182,9 @@ for a = 1:length(anat)
     Rssq_mean.(anat{a}) = Rssq.(anat{a});
     Rssq_mean.(anat{a})(find(Rssq_mean.(anat{a})==0)) = []; %remove when forces = 0 as this affects the average
     if any(Rssq_mean.(anat{a}))>0
-        Metrics(sj).(strcat((anat{a}),'Overall','Force_mean')) = mean(Rssq.(anat{a}));
+        Metrics.(strcat((anat{a}),'Overall','Force_mean')) = mean(Rssq.(anat{a}));
     else
-        Metrics(sj).(strcat((anat{a}),'Overall','Force_mean')) = 0;
+        Metrics.(strcat((anat{a}),'Overall','Force_mean')) = 0;
     end
 end
 
@@ -194,9 +194,9 @@ for a = 1:length(anat)
         Forc_tool = Rssq.(anat{a})(ToolUsed.(tools{t}));
         Forc_tool(find(Forc_tool==0)) = [];
         if any(Forc_tool)>0
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Force_mean')) = mean(Forc_tool);
+            Metrics.(strcat((anat{a}),(tools{t}),'Force_mean')) = mean(Forc_tool);
         else
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Force_mean')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'Force_mean')) = 0;
         end
         clear Forc_tool
     end
@@ -206,9 +206,9 @@ end
 % Overall
 for a = 1:length(anat)
     if any(Contact.(anat{a}))>0
-        Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = ireg_time(Contact.(anat{a}),x.TimeSinceStart);
+        Metrics.(strcat((anat{a}),'Overall','Contact_time')) = ireg_time(Contact.(anat{a}),x.TimeSinceStart);
     else
-        Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = 0;
+        Metrics.(strcat((anat{a}),'Overall','Contact_time')) = 0;
     end
 end
 
@@ -217,9 +217,9 @@ for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
         if any(inter_tool_anat)>0
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = ireg_time(inter_tool_anat,x.TimeSinceStart);
+            Metrics.(strcat((anat{a}),(tools{t}),'Contact_time')) = ireg_time(inter_tool_anat,x.TimeSinceStart);
         else 
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'Contact_time')) = 0;
         end
     end
 end
@@ -232,19 +232,19 @@ for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
         if any(inter_tool_anat)>0
-            [Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanZ')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanOverall'))]...
+            [Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanZ')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanOverall'))]...
                 = ireg_vel_mean(inter_tool_anat,x.VirtualToolTipPosition_X,...
                 x.VirtualToolTipPosition_Y,x.VirtualToolTipPosition_Z,...
                 x.TimeSinceStart);
-            %Metrics(sj).VelocityWhileContact_mean.(tools{t}).(anat{a}) = Rssq_vel(Contact.(anat{a}));
+            %Metrics.VelocityWhileContact_mean.(tools{t}).(anat{a}) = Rssq_vel(Contact.(anat{a}));
         else
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanX')) = 0;
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanY')) = 0;
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanZ')) = 0;
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanOverall')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanX')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanY')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanZ')) = 0;
+            Metrics.(strcat((anat{a}),(tools{t}),'VelocityWhileContact_meanOverall')) = 0;
         end
     end
 end
@@ -255,21 +255,21 @@ for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
         if any(inter_tool_anat)>0
-            [Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanZ')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxZ')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minZ')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numZ')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanX')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanY')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanZ')),...
+            [Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanZ')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxZ')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minZ')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numZ')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanX')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanY')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanZ')),...
                 ~,...
                 ~,...
                 ~]...
@@ -277,24 +277,24 @@ for a = 1:length(anat)
                 x.VirtualToolTipPosition_Y,x.VirtualToolTipPosition_Z,...
                 x.TimeSinceStart);
         else
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanX')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanY')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanZ')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxX')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxY')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxZ')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minX')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minY')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minZ')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numX')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numY')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numZ')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanX')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanY')) = 0;
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanZ')) = 0;
-%                 Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanX')) = 0;
-%                 Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanY')) = 0;
-%                 Metrics(sj).(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanZ')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanX')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanY')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_meanZ')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxX')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxY')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_maxZ')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minX')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minY')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_minZ')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numX')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numY')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_numZ')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanX')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanY')) = 0;
+                Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_p2pmeanZ')) = 0;
+%                 Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanX')) = 0;
+%                 Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanY')) = 0;
+%                 Metrics.(strcat((anat{a}),(tools{t}),'AccelerationWhileContact_regulmeanZ')) = 0;
         end
     end
 end
@@ -305,50 +305,50 @@ for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
         if any(inter_tool_anat)>0
-            [Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLWhileContact_X')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Y')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Z')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Overall')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_X')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Y')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Z')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Overall')),...
-                Metrics(sj).(strcat((anat{a}),(tools{t}),'NumberStrokesWhileContact'))]=ireg_TTPL(inter_tool_anat,x.VirtualToolTipPosition_X,x.VirtualToolTipPosition_Y,x.VirtualToolTipPosition_Z);
+            [Metrics.(strcat((anat{a}),(tools{t}),'TTPLWhileContact_X')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Y')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Z')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLWhileContact_Overall')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_X')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Y')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Z')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'TTPLPerStrokeWhileContact_Overall')),...
+                Metrics.(strcat((anat{a}),(tools{t}),'NumberStrokesWhileContact'))]=ireg_TTPL(inter_tool_anat,x.VirtualToolTipPosition_X,x.VirtualToolTipPosition_Y,x.VirtualToolTipPosition_Z);
         end
     end
 end
 
 end
 %% Stats and Data Organization
-% if d==1
-%     nov = struct2table(Metrics(sj));
-%     novmat = table2array(nov);
-%     % repalce nan with the mean of the column
-%     n = nanmean(novmat);
-%     nn = isnan(novmat);
-%     ii = sum(nn) < 3;
-%     z = novmat(:,ii);
-%     z(nn(:,ii)) = nonzeros(bsxfun(@times,nn(:,ii),n(ii)));
-%     novmat(:,ii) = z;
-%     novtbl = array2table(novmat);
-%     nov(:,:) = novtbl;
-% elseif d==2
-%     exp = struct2table(Metrics(sj));
-%     expmat = table2array(exp);
-%     % repalce nan with the mean of the column
-%     e = nanmean(expmat);
-%     ee = isnan(expmat);
-%     iie = sum(ee) < 3;
-%     ze = expmat(:,iie);
-%     ze(ee(:,iie)) = nonzeros(bsxfun(@times,ee(:,iie),e(iie)));
-%     expmat(:,iie) = ze;
-%     size(expmat)
-%     exptbl = array2table(expmat);
-%     exp(:,:) = exptbl;
-% 
-% [sub,sig_table,sig_vars] = metrics_lamin_stats(novmat,nov,expmat,exp,0.05);
-% 
-% toc
-% end
-% clear Metrics;
+if d==1
+    nov = struct2table(Metrics);
+    novmat = table2array(nov);
+    % repalce nan with the mean of the column
+    n = nanmean(novmat);
+    nn = isnan(novmat);
+    ii = sum(nn) < 3;
+    z = novmat(:,ii);
+    z(nn(:,ii)) = nonzeros(bsxfun(@times,nn(:,ii),n(ii)));
+    novmat(:,ii) = z;
+    novtbl = array2table(novmat);
+    nov(:,:) = novtbl;
+elseif d==2
+    exp = struct2table(Metrics);
+    expmat = table2array(exp);
+    % repalce nan with the mean of the column
+    e = nanmean(expmat);
+    ee = isnan(expmat);
+    iie = sum(ee) < 3;
+    ze = expmat(:,iie);
+    ze(ee(:,iie)) = nonzeros(bsxfun(@times,ee(:,iie),e(iie)));
+    expmat(:,iie) = ze;
+    size(expmat)
+    exptbl = array2table(expmat);
+    exp(:,:) = exptbl;
+
+[sub,sig_table,sig_vars] = metrics_lamin_stats(novmat,nov,expmat,exp,0.05);
+
+toc
+end
+clear Metrics;
 end
