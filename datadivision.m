@@ -27,8 +27,91 @@ load([DataDir 'Data_2J_Compact.mat']);
 load([DataDir 'Data_3S_Compact.mat']);
 load([DataDir 'Data_4C_Compact.mat']);
 
-
 %%
+for sj=1:length(data)
+    disp(['Subject: ',num2str(sj),' of ',num2str(length(data))]);
+    y=data(sj);
+
+%% Find time duplicates
+timeDupInd = find([0.1;diff(y.TimeSinceStart)]); 
+fieldNam = fieldnames(y);
+for i = 1:numel(fieldNam)
+    x.(fieldNam{i}) = y.(fieldNam{i})(timeDupInd);
+end
+
+
+ToolUsed.BoneCurette = find(contains(x.ToolUsed,'Bone Curette'));
+
+% Check for randomly changing tools
+Chang = find(diff(ToolUsed.BoneCurette)>1);
+ChangIdx = ToolUsed.BoneCurette(Chang);
+for i = 1:length(ChangIdx)
+    if contains(x.ToolUsed(ChangIdx(1)-10),'Bone Curette') || contains(x.ToolUsed(ChangIdx(1)+10),'Bone Curette')
+    else
+        ToolUsed.BoneCurette(Chang(i))=[];
+    end
+end
+
+
+%% Find the start and end of each 10sec block
+
+if any(ToolUsed.BoneCurette)>0
+TimeStart = min(x.TimeSinceStart(ToolUsed.BoneCurette));
+TimeEnd = max(x.TimeSinceStart(ToolUsed.BoneCurette));
+Diff = TimeEnd-TimeStart;
+groupStartIdx(1) = find(x.TimeSinceStart==TimeStart);
+correction=0;
+    for i=0:10:Diff
+        if i==0
+            TimeLoop = TimeStart+10;
+            groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
+            groupEndIdx(1) = groupEnd(1);
+        else
+            groupStartIdx(i/10+1-correction) = groupEndIdx(i/10-correction);
+            TimeLoop = x.TimeSinceStart(groupEndIdx(i/10-correction)) + 10;
+            groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
+            if any(groupEnd)>0
+                groupEndIdx(i/10+1-correction) = groupEnd(1);
+            else
+                groupStartIdx(i/10+1-correction) = [];
+                correction = correction + 10;
+            end
+        end
+    end
+end
+
+if length(groupStartIdx)>length(groupEndIdx)
+    groupStartIdx(end) = [];
+end
+    
+
+%% Extract Data in the blocks
+for l = 1:length(groupStartIdx)
+    jumps=linspace(groupStartIdx(l),groupEndIdx(l),(groupEndIdx(l)-groupStartIdx(l))+1);    
+    for i = 1:numel(fieldNam)
+        M1(sj).Block_Curette(l).(fieldNam{i}) = y.(fieldNam{i})(jumps');
+        datTab{sj} = struct2table(M1(sj).Block_Curette);
+    end
+end
+
+if sj==length(data)
+    AllData = [datTab{1}];
+    for ss=1:sj
+        AllData=[AllData;datTab{ss}];
+    end
+end
+end
+
+
+
+
+
+
+
+
+
+
+%% Metrics
 for d=1:4
     tic
     if d==1
@@ -211,9 +294,9 @@ end
 % Overall
 for a = 1:length(anat)
     if any(Contact.(anat{a}))>0
-        Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = ireg_time(Contact.(anat{a}),x.TimeSinceStart);
+   %     Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = ireg_time(Contact.(anat{a}),x.TimeSinceStart);
     else
-        Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = 0;
+   %     Metrics(sj).(strcat((anat{a}),'Overall','Contact_time')) = 0;
     end
 end
 
@@ -222,9 +305,9 @@ for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
         if any(inter_tool_anat)>0
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = ireg_time(inter_tool_anat,x.TimeSinceStart);
+  %          Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = ireg_time(inter_tool_anat,x.TimeSinceStart);
         else 
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = 0;
+   %         Metrics(sj).(strcat((anat{a}),(tools{t}),'Contact_time')) = 0;
         end
     end
 end
@@ -347,36 +430,23 @@ elseif d==4
 end
 clear Metrics
 end
-%% Stats and Data Organization
-% if d==1
-%     nov = struct2table(Metrics(sj));
-%     novmat = table2array(nov);
-%     % repalce nan with the mean of the column
-%     n = nanmean(novmat);
-%     nn = isnan(novmat);
-%     ii = sum(nn) < 3;
-%     z = novmat(:,ii);
-%     z(nn(:,ii)) = nonzeros(bsxfun(@times,nn(:,ii),n(ii)));
-%     novmat(:,ii) = z;
-%     novtbl = array2table(novmat);
-%     nov(:,:) = novtbl;
-% elseif d==2
-%     exp = struct2table(Metrics(sj));
-%     expmat = table2array(exp);
-%     % repalce nan with the mean of the column
-%     e = nanmean(expmat);
-%     ee = isnan(expmat);
-%     iie = sum(ee) < 3;
-%     ze = expmat(:,iie);
-%     ze(ee(:,iie)) = nonzeros(bsxfun(@times,ee(:,iie),e(iie)));
-%     expmat(:,iie) = ze;
-%     size(expmat)
-%     exptbl = array2table(expmat);
-%     exp(:,:) = exptbl;
-% 
-% [sub,sig_table,sig_vars] = metrics_lamin_stats(novmat,nov,expmat,exp,0.05);
-% 
-% toc
-% end
-% clear Metrics;
 end
+
+
+%% Preparation for Neural Nets
+% Convert all tables to a 
+Metrics_mat_1M = table2array(Metrics_1M);
+Metrics_mat_2J = table2array(Metrics_2J);
+Metrics_mat_3S = table2array(Metrics_3S);
+Metrics_mat_4C = table2array(Metrics_4C);
+All = [Metrics_mat_1M;Metrics_mat_2J;Metrics_mat_3S;Metrics_mat_4C];
+% Create labels
+ANN_labs = repelem(1,48);
+ANN_labs = [ANN_labs repelem(0,188)];
+ANN_labs = [ANN_labs;repelem([0 1 0],[48 124 64])];
+ANN_labs = [ANN_labs;repelem([0 1 0],[172 42 22])];
+ANN_labs = [ANN_labs;repelem([0 1],[214 22])];
+ANN_labels=ANN_labs';
+
+% Launch Pattern Recognition Tool
+nprtool

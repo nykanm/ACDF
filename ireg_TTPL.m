@@ -10,8 +10,21 @@ function [ttplX,ttplY,ttplZ,ttpl_overall,...
   bin = diff(one); 
     if any(condition)==1 % checks that condition is not empty
         % this adds a start if the action begins at time 0
-        if condition(1)==1
-            bin(1)=1;
+        startpos=find(bin==1);endpos=find(bin==-1);
+        if any(startpos)==0
+            if condition(1)==1
+                bin(1)=1;
+                %bin(1)=-1; % for datadivision.m
+            end
+        else
+            if endpos(1)==1
+                bin(1)=0;
+            elseif startpos(1) > endpos(1)
+                if condition(1)==1
+                    bin(1)=1;
+                    %bin(1)=-1; % for datadivision.m
+                end
+            end
         end
 
         starts = find(bin==1);
