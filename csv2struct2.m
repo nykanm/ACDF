@@ -22,6 +22,7 @@ for i=n:length(subdir)
     fields = fieldnames(Instr);
 
     for idx=1:length(fieldnames(Instr))
+        disp(idx);
         if n==3
             RawData(i-2).(fields{idx}) = vertcat(Instr.(fields{idx}));
         elseif n==4
@@ -30,7 +31,7 @@ for i=n:length(subdir)
     end
 end
 old = cd;
-cd '/Users/nykan/Documents/McGill Grad/Matlab/ACDF/Sample Data/';
+cd(DataDir);
 
 if strcmp(loadfolder,'1M_Compact')==1
     RawData_1M = RawData;

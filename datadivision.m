@@ -7,11 +7,11 @@
 % Take all the data from Ossim and put them into a folder called Sample
 % Data. Create a folder for each group such as 1M, 2J, 3S, 4C
 % Change this to the directory where your raw data is stored:
-DataDir = '/Users/nykan/Documents/McGill Grad/Matlab/ACDF/Sample Data/';
-% csv_concat('1M',DataDir);
-% csv_concat('2J',DataDir);
-% csv_concat('3S',DataDir);
-% csv_concat('4C',DataDir);
+DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
+ csv_concat('1M',DataDir);
+ csv_concat('2J',DataDir);
+ csv_concat('3S',DataDir);
+ csv_concat('4C',DataDir);
 % This creates the .mat files for all groups in the same folder as the raw
 % data.
 csv2struct2('1M_Compact',DataDir);
@@ -20,7 +20,7 @@ csv2struct2('3S_Compact',DataDir);
 csv2struct2('4C_Compact',DataDir);
 
 %% Load your data
-DataDir = '/Users/nykan/Documents/McGill Grad/Matlab/ACDF/Sample Data/';
+DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
 
 load([DataDir 'Data_1M_Compact.mat']);
 load([DataDir 'Data_2J_Compact.mat']);

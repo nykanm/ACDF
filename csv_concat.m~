@@ -28,7 +28,7 @@ for i=3:length(subdir)
     for ii=3:length(subdir3)
         disp(ii-2);
         filename = [foldername2 '/' subdir3(ii).name];
-        csv{ii-2} = readtable(filename,'HeaderLines',1);
+        csv{ii-2} = readtable(filename);
     end
         allcsv = vertcat(csv{1},csv{2});
         for o=3:length(csv)
