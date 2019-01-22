@@ -13,7 +13,7 @@ else
 end
 
 for i=n:length(subdir) 
-    filepath = [subdir(i).folder '/' subdir(i).name];
+    filepath = [subdir(i).folder '\' subdir(i).name];
 
     ins = readtable(filepath);
 

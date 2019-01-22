@@ -7,7 +7,7 @@
 % Take all the data from Ossim and put them into a folder called Sample
 % Data. Create a folder for each group such as 1M, 2J, 3S, 4C
 % Change this to the directory where your raw data is stored:
-DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
+DataDir = 'F:\OSSIM STUDY DATA\';
  csv_concat('1M',DataDir);
  csv_concat('2J',DataDir);
  csv_concat('3S',DataDir);
@@ -20,7 +20,7 @@ csv2struct2('3S_Compact',DataDir);
 csv2struct2('4C_Compact',DataDir);
 
 %% Load your data
-DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
+DataDir = 'F:\OSSIM STUDY DATA\';
 
 load([DataDir 'Data_1M_Compact.mat']);
 load([DataDir 'Data_2J_Compact.mat']);
@@ -45,13 +45,14 @@ ToolUsed.BoneCurette = find(contains(x.ToolUsed,'Bone Curette'));
 % Check for randomly changing tools
 Chang = find(diff(ToolUsed.BoneCurette)>1);
 ChangIdx = ToolUsed.BoneCurette(Chang);
+Chang = flip(Chang);
 for i = 1:length(ChangIdx)
     if contains(x.ToolUsed(ChangIdx(1)-10),'Bone Curette') || contains(x.ToolUsed(ChangIdx(1)+10),'Bone Curette')
     else
         ToolUsed.BoneCurette(Chang(i))=[];
     end
 end
-
+clear Chang
 
 %% Find the start and end of each 10sec block
 
@@ -78,12 +79,13 @@ correction=0;
             end
         end
     end
-end
-
-if length(groupStartIdx)>length(groupEndIdx)
+    if length(groupStartIdx)>length(groupEndIdx)
     groupStartIdx(end) = [];
-end
+    end
     
+
+
+
 
 %% Extract Data in the blocks
 for l = 1:length(groupStartIdx)
@@ -99,6 +101,7 @@ if sj==length(data)
     for ss=1:sj
         AllData=[AllData;datTab{ss}];
     end
+end
 end
 end
 
