@@ -14,9 +14,9 @@ savedir = [DataDir];
 
 %% csv_concat
 subdir = dir(loaddir);
-
+disp(loadfolder);
 for i=3:length(subdir)
-    disp(i-2);
+    disp([num2str(i-2),' of ',num2str(length(subdir))]);
     foldername = [loaddir '/' subdir(i).name];
     subdir2 = dir(foldername);
     if length(subdir2)==3
@@ -26,7 +26,7 @@ for i=3:length(subdir)
     end
         subdir3 = dir(foldername2);
     for ii=3:length(subdir3)
-        disp(ii-2);
+        %disp(ii-2);
         filename = [foldername2 '/' subdir3(ii).name];
         csv{ii-2} = readtable(filename,'HeaderLines',1);
     end

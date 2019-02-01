@@ -7,20 +7,23 @@
 % Take all the data from Ossim and put them into a folder called Sample
 % Data. Create a folder for each group such as 1M, 2J, 3S, 4C
 % Change this to the directory where your raw data is stored:
-DataDir = '/Users/nykan/Documents/McGill Grad/Matlab/ACDF/Sample Data/';
-% csv_concat('1M',DataDir);
-% csv_concat('2J',DataDir);
-% csv_concat('3S',DataDir);
-% csv_concat('4C',DataDir);
+DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
+csv_concat('1M',DataDir);
+csv_concat('2J',DataDir);
+csv_concat('3S',DataDir);
+csv_concat('4F',DataDir);
+csv_concat('5C',DataDir);
 % This creates the .mat files for all groups in the same folder as the raw
 % data.
 csv2struct2('1M_Compact',DataDir);
 csv2struct2('2J_Compact',DataDir);
 csv2struct2('3S_Compact',DataDir);
-csv2struct2('4C_Compact',DataDir);
+csv2struct2('4F_Compact',DataDir);
+csv2struct2('5C_Compact',DataDir);
 
 %% Load your data
 DataDir = '/Users/nykan/Documents/McGill Grad/Matlab/ACDF/Sample Data/';
+DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
 
 load([DataDir 'Data_1M_Compact.mat']);
 load([DataDir 'Data_2J_Compact.mat']);
@@ -51,7 +54,7 @@ for d=1:4
 for sj=1:length(data)
     disp(['Subject: ',num2str(sj),' of ',num2str(length(data))]);
     y=data(sj);
-
+if length(y.TimeSinceStart)>0
 %% Find time duplicates
 timeDupInd = find([0.1;diff(y.TimeSinceStart)]); 
 fieldNam = fieldnames(y);
@@ -346,6 +349,7 @@ elseif d==4
     Metrics_4C(sj,:) = tab4;
 end
 clear Metrics
+end
 end
 %% Stats and Data Organization
 % if d==1

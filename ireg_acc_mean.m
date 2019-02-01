@@ -117,10 +117,21 @@ function [accX_mean,accY_mean,accZ_mean,...
             row_x = find(changes_x == 1);
             row_y = find(changes_y == 1);
             row_z = find(changes_z == 1);
-
-            acc_Mov_x=diff(acc_x_fin(row_x));
-            acc_Mov_y=diff(acc_x_fin(row_y));
-            acc_Mov_z=diff(acc_x_fin(row_z));
+            if length(row_x)>2
+                acc_Mov_x=diff(acc_x_fin(row_x));
+            else
+                acc_Mov_x=0;
+            end
+            if length(row_y)>2
+                acc_Mov_y=diff(acc_x_fin(row_y));
+            else
+                acc_Mov_y=0;
+            end
+            if length(row_z)>2
+                acc_Mov_z=diff(acc_x_fin(row_z));
+            else
+                acc_Mov_z=0;
+            end
             
             % mean peak 2 peak difference
             acc_x_p2p_mean=mean(abs(acc_Mov_x));

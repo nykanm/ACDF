@@ -27,7 +27,10 @@ load([DataDir 'Data_2J_Compact.mat']);
 load([DataDir 'Data_3S_Compact.mat']);
 load([DataDir 'Data_4C_Compact.mat']);
 
-%%
+%% Time Blocks
+% set timB equal to the time block in seconds
+timB = 10;
+
 for sj=1:length(data)
     disp(['Subject: ',num2str(sj),' of ',num2str(length(data))]);
     y=data(sj);
@@ -57,66 +60,88 @@ clear Chang
 %% Find the start and end of each 10sec block
 
 if any(ToolUsed.BoneCurette)>0
+% For 10sec blocks
+% TimeStart = min(x.TimeSinceStart(ToolUsed.BoneCurette));
+% TimeEnd = max(x.TimeSinceStart(ToolUsed.BoneCurette));
+% Diff = TimeEnd-TimeStart;
+% groupStartIdx(1) = find(x.TimeSinceStart==TimeStart);
+% correction=0;
+%     for i=0:timB:Diff
+%         if i==0
+%             TimeLoop = TimeStart+timB;
+%             groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
+%             groupEndIdx(1) = groupEnd(1);
+%         else
+%             groupStartIdx(i/timB+1-correction) = groupEndIdx(i/timB-correction);
+%             TimeLoop = x.TimeSinceStart(groupEndIdx(i/timB-correction)) + timB;
+%             groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
+%             if any(groupEnd)>0
+%                 groupEndIdx(i/timB+1-correction) = groupEnd(1);
+%             else
+%                 groupStartIdx(i/timB+1-correction) = [];
+%                 correction = correction + timB;
+%             end
+%         end
+%     end
+%     if length(groupStartIdx)>length(groupEndIdx)
+%     groupStartIdx(end) = [];
+%     end
+% % -----------------------    
+% For blocks that increase by 10sec every itteration
 TimeStart = min(x.TimeSinceStart(ToolUsed.BoneCurette));
 TimeEnd = max(x.TimeSinceStart(ToolUsed.BoneCurette));
 Diff = TimeEnd-TimeStart;
 groupStartIdx(1) = find(x.TimeSinceStart==TimeStart);
 correction=0;
-    for i=0:10:Diff
-        if i==0
-            TimeLoop = TimeStart+10;
+rep=Diff/timB;rep=round(rep);
+    for i=1:rep
+        if i==1
+            TimeLoop = TimeStart+timB;
             groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
             groupEndIdx(1) = groupEnd(1);
         else
-            groupStartIdx(i/10+1-correction) = groupEndIdx(i/10-correction);
-            TimeLoop = x.TimeSinceStart(groupEndIdx(i/10-correction)) + 10;
+            TimeLoop = TimeStart+(timB*i);
             groupEnd = find(x.TimeSinceStart>TimeLoop-1 & x.TimeSinceStart<TimeLoop+1);
             if any(groupEnd)>0
-                groupEndIdx(i/10+1-correction) = groupEnd(1);
+                groupEndIdx(i) = groupEnd(1);
             else
-                groupStartIdx(i/10+1-correction) = [];
-                correction = correction + 10;
             end
         end
     end
-    if length(groupStartIdx)>length(groupEndIdx)
-    groupStartIdx(end) = [];
-    end
-    
-
-
-
-
-%% Extract Data in the blocks
-for l = 1:length(groupStartIdx)
-    jumps=linspace(groupStartIdx(l),groupEndIdx(l),(groupEndIdx(l)-groupStartIdx(l))+1);    
+for l = 1:length(groupEndIdx)
+    jumps=linspace(groupStartIdx(1),groupEndIdx(l),(groupEndIdx(l)-groupStartIdx(1))+1);    
     for i = 1:numel(fieldNam)
-        M1(sj).Block_Curette(l).(fieldNam{i}) = y.(fieldNam{i})(jumps');
+        M1(sj).Block_Curette(l).(fieldNam{i}) = x.(fieldNam{i})(jumps');
         datTab{sj} = struct2table(M1(sj).Block_Curette);
     end
 end
-
+%% Extract Data in the blocks
+% for l = 1:length(groupStartIdx)
+%     jumps=linspace(groupStartIdx(l),groupEndIdx(l),(groupEndIdx(l)-groupStartIdx(l))+1);    
+%     for i = 1:numel(fieldNam)
+%         M1(sj).Block_Curette(l).(fieldNam{i}) = x.(fieldNam{i})(jumps');
+%         datTab{sj} = struct2table(M1(sj).Block_Curette);
+%     end
+% end
+% -----------
 if sj==length(data)
     AllData = [datTab{1}];
-    for ss=1:sj
+    if sj>1
+    for ss=2:sj
         AllData=[AllData;datTab{ss}];
     end
+    end
+end
+clear groupEndIdx;
 end
 end
-end
-
-
-
-
-
-
 
 
 
 
 %% Metrics
-for d=1:4
-    tic
+for d=2
+    
     if d==1
         %data=RawData_1M;
         data=table2struct(AllData_1M);
@@ -132,11 +157,13 @@ for d=1:4
     elseif d==4
         %data=RawData_4C;
         data=table2struct(AllData_4C);
-        disp(['Consultant Residents Total: ',num2str(length(data))]);
+        disp(['Consultant Total: ',num2str(length(data))]);
     end
 for sj=1:length(data)
+    tic
     disp(['Subject: ',num2str(sj),' of ',num2str(length(data))]);
     y=data(sj);
+if length(y.TimeSinceStart)>0
 
 %% Find time duplicates
 timeDupInd = find([0.1;diff(y.TimeSinceStart)]); 
@@ -433,7 +460,16 @@ elseif d==4
 end
 clear Metrics
 end
+toc
 end
+end
+
+%% Variance Thresholding
+Metrics_matss = table2array(Metrics_4C);
+for i=1:size(Metrics_matss,2)
+    varb(i) = var(Metrics_matss(:,i));
+end
+avg_varb5 = mean(varb);
 
 
 %% Preparation for Neural Nets
@@ -443,13 +479,87 @@ Metrics_mat_2J = table2array(Metrics_2J);
 Metrics_mat_3S = table2array(Metrics_3S);
 Metrics_mat_4C = table2array(Metrics_4C);
 All = [Metrics_mat_1M;Metrics_mat_2J;Metrics_mat_3S;Metrics_mat_4C];
+All_normR=normalize(All);
+All_norm=All_normR(:,all(~isnan(All_normR)));
 % Create labels
-ANN_labs = repelem(1,48);
-ANN_labs = [ANN_labs repelem(0,188)];
-ANN_labs = [ANN_labs;repelem([0 1 0],[48 124 64])];
-ANN_labs = [ANN_labs;repelem([0 1 0],[172 42 22])];
-ANN_labs = [ANN_labs;repelem([0 1],[214 22])];
+num_1M=size(Metrics_1M,1);
+num_2J=size(Metrics_2J,1);
+num_3S=size(Metrics_3S,1);
+num_4C=size(Metrics_4C,1);
+total=num_1M+num_2J+num_3S+num_4C;
+
+ANN_labs = repelem(1,num_1M);
+ANN_labs = [ANN_labs repelem(0,total-num_1M)];
+ANN_labs = [ANN_labs;repelem([0 1 0],[num_1M num_2J total-num_1M-num_2J])];
+ANN_labs = [ANN_labs;repelem([0 1 0],[num_1M+num_2J num_3S num_4C])];
+ANN_labs = [ANN_labs;repelem([0 1],[total-num_4C num_4C])];
 ANN_labels=ANN_labs';
 
-% Launch Pattern Recognition Tool
-nprtool
+
+%% Feature Selection
+labels = repelem([1 2 3 4],[num_1M num_2J num_3S num_4C])';
+[b,se,pval,inmodel,stats,nextstep,history] = stepwisefit(All_norm,labels);
+sig_mets = find(inmodel);
+Best = All_norm(:,sig_mets);
+
+
+%% Neural Net
+inputs = Best';
+targets = ANN_labels';itt=1;warning off
+for layers=2:10
+    for pp=1:50
+hiddenLayerSize = layers;
+net = patternnet(hiddenLayerSize);
+
+net.divideParam.trainRatio = 70/100;
+% net.divideParam.valRatio = 15/100;
+net.divideParam.testRatio = 30/100;
+% trnn=[1:24 41:93 109:166];
+% ttt=[25:40 94:108 167:172];
+
+    % Parameter Adjustments
+    net.trainFcn='trainbr';
+    net.trainParam.epochs=1000;
+    net.trainParam.showWindow=false;
+    
+%     net.divideFcn = 'divideind';
+% net.divideParam.trainInd = trnn;
+% net.divideParam.testInd=ttt;
+
+
+    % Train the Network
+    [net,tr] = train(net,inputs,targets);
+
+    % Test the Network
+    outputs = net(inputs);
+    errors = gsubtract(targets,outputs);
+    performance = perform(net,targets,outputs);
+
+    % View the Network
+    %view(net)
+
+    % Confusion Matrix
+    %figure, plotconfusion(targets,outputs)
+
+    % Confusion Matrix for test group
+    tInd = tr.testInd;
+    tstOutputs = net(inputs(:,tInd));
+    tstTargets = targets(:,tInd);
+    %figure, plotconfusion(tstTargets,tstOutputs);
+
+    % Extract accuracy
+    [c,cm]=confusion(tstTargets,tstOutputs);
+    tst_acc=1-c;
+    [ct,cm]=confusion(targets,outputs);
+    tr_acc=1-ct;
+        fprintf('Itt. %i, Layers %i, Epochs %i, Training Acc %2.2f, Testing Acc %2.2f \n',...
+            pp,layers,...
+            net.trainParam.epochs,...
+            round(tr_acc,3,'significant'),round(tst_acc,3,'significant'));
+         if tst_acc>0.8
+             %figure, plotconfusion(tstTargets,tstOutputs);
+             %break
+         end
+        itt=itt+1;
+    end
+end
