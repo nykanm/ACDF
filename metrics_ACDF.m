@@ -7,7 +7,7 @@
 % Take all the data from Ossim and put them into a folder called Sample
 % Data. Create a folder for each group such as 1M, 2J, 3S, 4C
 % Change this to the directory where your raw data is stored:
-DataDir = '/Volumes/Seagate/OSSIM STUDY DATA/';
+DataDir = 'F:\OSSIM STUDY DATA\';
 csv_concat('1M',DataDir);
 csv_concat('2J',DataDir);
 csv_concat('3S',DataDir);
@@ -32,24 +32,28 @@ load([DataDir 'Data_4C_Compact.mat']);
 
 
 %%
-for d=1:4
+for d=1:5
     tic
     if d==1
-        %data=RawData_1M;
-        data=table2struct(AllData_1M);
+        data=RawData_1M;
+        %data=table2struct(AllData_1M);
         disp(['Med Students Total: ',num2str(length(data))]);
     elseif d==2
-        %data=RawData_2J;
-        data=table2struct(AllData_2J);
+        data=RawData_2J;
+        %data=table2struct(AllData_2J);
         disp(['Junior Residents Total: ',num2str(length(data))]);
     elseif d==3
-        %data=RawData_3S;
-        data=table2struct(AllData_3S);
+        data=RawData_3S;
+        %data=table2struct(AllData_3S);
         disp(['Senior Residents Total: ',num2str(length(data))]);
     elseif d==4
-        %data=RawData_4C;
-        data=table2struct(AllData_4C);
-        disp(['Consultant Residents Total: ',num2str(length(data))]);
+        data=RawData_4F;
+        %data=table2struct(AllData_4F);
+        disp(['Fellows Total: ',num2str(length(data))]);
+     elseif d==5
+        data=RawData_5C;
+        %data=table2struct(AllData_5C);
+        disp(['Fellows Total: ',num2str(length(data))]);
     end
 for sj=1:length(data)
     disp(['Subject: ',num2str(sj),' of ',num2str(length(data))]);
@@ -118,8 +122,8 @@ Cutting_con1.LVA = x.CutVoxelsLeftVertebralArtery; Cutting_con1.LVA(Cutting.LVA)
 Cutting_con1.RVA = x.CutVoxelsRightVertebralArtery; Cutting_con1.RVA(Cutting.RVA) = 1;
 
 %% Define anat and tools
-%tools = {'Scalpel','BoneCurette','Rongeur2mm','DiscRongeur','Burr','NerveHook','Kerrison1mm'};
-tools = {'BoneCurette'};
+tools = {'Scalpel','BoneCurette','Rongeur2mm','DiscRongeur','Burr'};
+%tools = {'BoneCurette'};
 anat = {'C4','C5','C4C5DiscAnnulus','C4C5DiscNucleus','PllLeft','PllRight','SC','LVA','RVA'};
 
 %% Number of touches (instenses)
@@ -346,7 +350,10 @@ elseif d==3
     Metrics_3S(sj,:) = tab3;
 elseif d==4
     tab4 = struct2table(Metrics(sj));
-    Metrics_4C(sj,:) = tab4;
+    Metrics_4F(sj,:) = tab4;
+elseif d==5
+    tab5 = struct2table(Metrics(sj));
+    Metrics_5C(sj,:) = tab5;
 end
 clear Metrics
 end
@@ -383,4 +390,104 @@ end
 % toc
 % end
 % clear Metrics;
+end
+
+
+%% Preparation for Neural Nets
+% Convert all tables to a 
+Metrics_mat_1M = table2array(Metrics_1M);
+Metrics_mat_2J = table2array(Metrics_2J);
+Metrics_mat_3S = table2array(Metrics_3S);
+Metrics_mat_4F = table2array(Metrics_4F);
+Metrics_mat_5C = table2array(Metrics_5C);
+
+All = [Metrics_mat_1M;Metrics_mat_2J;Metrics_mat_3S;Metrics_mat_4F;Metrics_mat_5C];
+All_normR=normalize(All);
+All_norm=All_normR(:,all(~isnan(All_normR)));
+% Create labels
+num_1M=size(Metrics_1M,1);
+num_2J=size(Metrics_2J,1);
+num_3S=size(Metrics_3S,1);
+num_4F=size(Metrics_4F,1);
+num_5C=size(Metrics_5C,1);
+
+total=num_1M+num_2J+num_3S+num_4F+num_5C;
+
+ANN_labs = repelem(1,num_1M);
+ANN_labs = [ANN_labs repelem(0,total-num_1M)];
+ANN_labs = [ANN_labs;repelem([0 1 0],[num_1M num_2J total-num_1M-num_2J])];
+ANN_labs = [ANN_labs;repelem([0 1 0],[num_1M+num_2J num_3S num_4F+num_5C])];
+%ANN_labs = [ANN_labs;repelem([0 1 0],[total-num_4F-num_5C num_4F num_5C])];
+ANN_labs = [ANN_labs;repelem([0 1],[total-num_5C-num_4F num_5C+num_4F])];
+ANN_labels=ANN_labs';
+
+
+%% Feature Selection
+labels = repelem([1 2 3 4],[num_1M num_2J num_3S num_4F+num_5C])';
+[b,se,pval,inmodel,stats,nextstep,history] = stepwisefit(All_norm,labels,'penter',0.01);
+sig_mets = find(inmodel);
+Best = All_norm(:,sig_mets);
+
+
+%% Neural Net
+inputs = Best(7:end,:)';
+targets = ANN_labels(7:end,2:4)';itt=1;warning off
+for layers=1:10
+    for pp=1:10
+hiddenLayerSize = layers;
+net = patternnet(hiddenLayerSize);
+
+net.divideParam.trainRatio = 70/100;
+% net.divideParam.valRatio = 15/100;
+net.divideParam.testRatio = 30/100;
+% trnn=[1:4 7 8 11 12 13 14 16:18 21 22];
+% ttt=[5 6 9 10 15 19 20 23:28];
+
+    % Parameter Adjustments
+    net.trainFcn='trainbr';
+    net.trainParam.epochs=1000;
+    net.trainParam.showWindow=false;
+    net.layers{1}.transferFcn='tansig';
+   % net.layers{2}.transferFcn='logsig';
+   % net.divideFcn = 'divideind';
+% net.divideParam.trainInd = trnn;
+% net.divideParam.testInd=ttt;
+
+
+    % Train the Network
+    [net,tr] = train(net,inputs,targets);
+
+    % Test the Network
+    outputs = net(inputs);
+    errors = gsubtract(targets,outputs);
+    performance = perform(net,targets,outputs);
+
+    % View the Network
+    %view(net)
+
+    % Confusion Matrix
+    %figure, plotconfusion(targets,outputs)
+
+    % Confusion Matrix for test group
+    tInd = tr.testInd;
+    tstOutputs = net(inputs(:,tInd));
+    tstTargets = targets(:,tInd);
+    %figure, plotconfusion(tstTargets,tstOutputs);
+
+    % Extract accuracy
+    [c,cm]=confusion(tstTargets,tstOutputs);
+    tst_acc=1-c;
+    [ct,cm]=confusion(targets,outputs);
+    tr_acc=1-ct;
+        fprintf('Itt. %i, Layers %i, Epochs %i, Training Acc %2.2f, Testing Acc %2.2f \n',...
+            pp,layers,...
+            net.trainParam.epochs,...
+            round(tr_acc,3,'significant'),round(tst_acc,3,'significant'));
+         if tst_acc>0.9
+            % figure, plotconfusion(targets,outputs);
+            % figure, plotconfusion(tstTargets,tstOutputs);
+             fprintf('WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW \n');
+         end
+        itt=itt+1;
+    end
 end

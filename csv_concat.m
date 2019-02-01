@@ -17,17 +17,17 @@ subdir = dir(loaddir);
 disp(loadfolder);
 for i=3:length(subdir)
     disp([num2str(i-2),' of ',num2str(length(subdir))]);
-    foldername = [loaddir '/' subdir(i).name];
+    foldername = [loaddir '\' subdir(i).name];
     subdir2 = dir(foldername);
     if length(subdir2)==3
-        foldername2 = [foldername '/' subdir2(3).name '/ToolLog'];
+        foldername2 = [foldername '\' subdir2(3).name '\ToolLog'];
     elseif length(subdir2)==4
-        foldername2 = [foldername '/' subdir2(4).name '/ToolLog'];
+        foldername2 = [foldername '\' subdir2(4).name '\ToolLog'];
     end
         subdir3 = dir(foldername2);
     for ii=3:length(subdir3)
         %disp(ii-2);
-        filename = [foldername2 '/' subdir3(ii).name];
+        filename = [foldername2 '\' subdir3(ii).name];
         csv{ii-2} = readtable(filename,'HeaderLines',1);
     end
         allcsv = vertcat(csv{1},csv{2});
@@ -37,7 +37,7 @@ for i=3:length(subdir)
 
         allcsv = sortrows(allcsv,'TimeSinceStart');
         
-        writetable(allcsv,[savedir loadfolder '_Compact/' subdir(i).name '.csv']);
+        writetable(allcsv,[savedir loadfolder '_Compact\' subdir(i).name '.csv']);
         clear csv;
         clear allcsv;
     
