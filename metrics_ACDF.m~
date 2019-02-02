@@ -122,7 +122,7 @@ Cutting_con1.RVA = x.CutVoxelsRightVertebralArtery; Cutting_con1.RVA(Cutting.RVA
 tools = {'BoneCurette'};
 anat = {'C4','C5','C4C5DiscAnnulus','C4C5DiscNucleus','PllLeft','PllRight','SC','LVA','RVA'};
 
-%% Number of touches (instenses) (EFFICIENCY)
+%% Number of touches (instenses)
 
 % Overall
 for a = 1:length(anat)
@@ -137,7 +137,7 @@ for a = 1:length(anat)
     end
 end
 
-%% Number of cuts (instenses) (EFFICIENCY)
+%% Number of cuts (instenses)
 
 % Overall
 for a = 1:length(anat)
@@ -152,7 +152,7 @@ for a = 1:length(anat)
     end
 end
 
-%% Number of voxels cut (QUALITY OR SAFETY)
+%% Number of voxels cut
 
 % Overall
 for a = 1:length(anat_cutvox)
@@ -166,7 +166,7 @@ for a = 1:length(anat_cutvox)
     end
 end
 
-%% Average force (SAFETY)
+%% Average force
 anat_forc_x = {'AverageForceC4Vertebra_X','AverageForceC5Vertebra_X','AverageForceC4C5DiscAnnulus_X',...
     'AverageForceC4C5DiscNucleus_X','AverageForcePllLeftBeam_X','AverageForcePllRightBeam_X',...
     'AverageForceSpinalCordNerves_X','AverageForceLeftVertebralArtery_X','AverageForceRightVertebralArtery_X'};
@@ -210,34 +210,21 @@ for a = 1:length(anat)
     end
 end
 
-%% Max force (SAFETY)
+%% Max force
 
 % Overall
 for a = 1:length(anat)
     Rssq_mean.(anat{a}) = Rssq.(anat{a});
+    Rssq_mean.(anat{a})(find(Rssq_mean.(anat{a})==0)) = []; %remove when forces = 0 as this affects the average
     if any(Rssq_mean.(anat{a}))>0
-        Metrics(sj).(strcat((anat{a}),'Overall','Force_max')) = max(Rssq.(anat{a}));
+        Metrics(sj).(strcat((anat{a}),'Overall','Force_mean')) = mean(Rssq.(anat{a}));
     else
-        Metrics(sj).(strcat((anat{a}),'Overall','Force_max')) = 0;
-    end
-end
-
-% With each tool
-for a = 1:length(anat)
-    for t = 1:length(tools)
-        Forc_tool = Rssq.(anat{a})(ToolUsed.(tools{t}));
-        Forc_tool(find(Forc_tool==0)) = [];
-        if any(Forc_tool)>0
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Force_max')) = max(Forc_tool);
-        else
-            Metrics(sj).(strcat((anat{a}),(tools{t}),'Force_max')) = 0;
-        end
-        clear Forc_tool
+        Metrics(sj).(strcat((anat{a}),'Overall','Force_mean')) = 0;
     end
 end
 
 
-%% Amount of time spent in contact with structure with each tool (EFFICIENCY)
+%% Amount of time spent in contact with structure with each tool
 % Overall
 for a = 1:length(anat)
     if any(Contact.(anat{a}))>0
@@ -260,7 +247,7 @@ for a = 1:length(anat)
 end
 
 
-%% Velocity while in contact with structures for each tool (MOTIONS)
+%% Velocity while in contact with structures for each tool
 % check this with new data
 
 % Velocity while contact with each tool
@@ -286,7 +273,7 @@ for a = 1:length(anat)
 end
 
 
-%% Acceleration while in contact with structure for each tool (MOTIONS)
+%% Acceleration while in contact with structure for each tool
 for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
@@ -336,7 +323,7 @@ for a = 1:length(anat)
 end
 
 
-%% Total Path Length for Tool while in contact with structure (EFFICIENCY)
+%% Total Path Length for Tool while in contact with structure
 for a = 1:length(anat)
     for t = 1:length(tools)
         inter_tool_anat = intersect(Contact.(anat{a}),ToolUsed.(tools{t}));
