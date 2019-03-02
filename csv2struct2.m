@@ -36,23 +36,23 @@ cd(DataDir);
 if strcmp(loadfolder,'1M_Compact')==1
     RawData_1M = RawData;
     disp('Saving 1M....');
-    save(['Data_' loadfolder '.mat'],'RawData_1M')
+    %save(['Data_' loadfolder '.mat'],'RawData_1M')
 elseif strcmp(loadfolder,'2J_Compact')==1
     RawData_2J = RawData;
     disp('Saving 2J....');
-    save(['Data_' loadfolder '.mat'],'RawData_2J')
+   % save(['Data_' loadfolder '.mat'],'RawData_2J')
 elseif strcmp(loadfolder,'3S_Compact')==1
     RawData_3S = RawData;
     disp('Saving 3S....');
-    save(['Data_' loadfolder '.mat'],'RawData_3S')
+   % save(['Data_' loadfolder '.mat'],'RawData_3S')
 elseif strcmp(loadfolder,'4F_Compact')==1
     RawData_4F = RawData;
     disp('Saving 4F....');
-    save(['Data_' loadfolder '.mat'],'RawData_4F')
+   % save(['Data_' loadfolder '.mat'],'RawData_4F')
 elseif strcmp(loadfolder,'5C_Compact')==1
     RawData_5C = RawData;
     disp('Saving 5C....');
-    save(['Data_' loadfolder '.mat'],'RawData_5C')
+   % save(['Data_' loadfolder '.mat'],'RawData_5C')
 end
 
 cd(old);
